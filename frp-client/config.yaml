@@ -30,6 +30,7 @@ options:
   proxyName: "homeassistant"
   tcpProxies:
     - name: app-8099
+      protocol: tcp
       localPort: 8099
       remotePort: 8099
 schema:
@@ -43,5 +44,7 @@ schema:
   proxyName: str
   tcpProxies:
     - name: str
+      protocol: "list(tcp|udp|http|https)"
       localPort: int
       remotePort: int
+      customDomain: "str?"

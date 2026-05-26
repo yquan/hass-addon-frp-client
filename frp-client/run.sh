@@ -25,28 +25,61 @@ sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::co
 sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
 sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
 
-tcp_proxies=$(bashio::config 'tcpProxies' '{"name":"app-8099","localPort":8099,"remotePort":8099}')
+tcp_proxies=$(bashio::config 'tcpProxies' '{"name":"app-8099","protocol":"tcp","localPort":8099,"remotePort":8099}')
 printf "%s\n" "${tcp_proxies}" | while read -r proxy; do
     proxy_name=$(bashio::jq "${proxy}" '.name // empty')
+    protocol=$(bashio::jq "${proxy}" '.protocol // "tcp"')
     local_port=$(bashio::jq "${proxy}" '.localPort // empty')
     remote_port=$(bashio::jq "${proxy}" '.remotePort // empty')
+    custom_domain=$(bashio::jq "${proxy}" '.customDomain // empty')
 
-    if [[ -z "${proxy_name}" || -z "${local_port}" || -z "${remote_port}" ]]; then
-        bashio::log.warning "Skipping TCP proxy with missing name, localPort, or remotePort"
+    if [[ -z "${proxy_name}" || -z "${local_port}" ]]; then
+        bashio::log.warning "Skipping proxy with missing name or localPort"
         continue
     fi
 
-    cat >> $CONFIG_PATH <<EOF
+    case "${protocol}" in
+        tcp|udp)
+            if [[ -z "${remote_port}" ]]; then
+                bashio::log.warning "Skipping ${proxy_name}: ${protocol} proxies require remotePort"
+                continue
+            fi
+
+            cat >> $CONFIG_PATH <<EOF
 
 [[proxies]]
 name = $(toml_string "$(bashio::config 'proxyName')-${proxy_name}")
-type = "tcp"
+type = "${protocol}"
 transport.useEncryption = true
 transport.useCompression = true
 localPort = ${local_port}
 localIP = "0.0.0.0"
 remotePort = ${remote_port}
 EOF
+            ;;
+        http|https)
+            if [[ -z "${custom_domain}" ]]; then
+                bashio::log.warning "Skipping ${proxy_name}: ${protocol} proxies require customDomain"
+                continue
+            fi
+
+            cat >> $CONFIG_PATH <<EOF
+
+[[proxies]]
+name = $(toml_string "$(bashio::config 'proxyName')-${proxy_name}")
+type = "${protocol}"
+customDomains = [$(toml_string "${custom_domain}")]
+transport.useEncryption = true
+transport.useCompression = true
+localPort = ${local_port}
+localIP = "0.0.0.0"
+EOF
+            ;;
+        *)
+            bashio::log.warning "Skipping ${proxy_name}: unsupported protocol '${protocol}'"
+            continue
+            ;;
+    esac
 done
 
 bashio::log.info "Starting frp client"
