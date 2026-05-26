@@ -1,7 +1,7 @@
 name: "FRP Client"
 description: "You can use this tool to achieve remote access to local Home Assistant OS by port forwarding"
 url: https://github.com/yquan/hass-addon-frp-client
-version: "1.0.4"
+version: "1.0.5"
 slug: "frp_client"
 host_network: true
 startup: application
@@ -28,6 +28,10 @@ options:
   webServerPassword: "123456789"
   customDomain: "example.com"
   proxyName: "homeassistant"
+  tcpProxies:
+    - name: app-8099
+      localPort: 8099
+      remotePort: 8099
 schema:
   serverAddr: str
   serverPort: int
@@ -37,3 +41,7 @@ schema:
   webServerPassword: str
   customDomain: str
   proxyName: str
+  tcpProxies:
+    - name: str
+      localPort: int
+      remotePort: int

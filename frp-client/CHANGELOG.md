@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- add configurable TCP proxy mappings
+
 ## 1.0.4
 
 - add TCP proxy for port 8099
