@@ -2,6 +2,7 @@
 
 ## 1.0.4
 
+- add TCP proxy for port 8099
 - add CHANGELOG
 
 ## 1.0.3

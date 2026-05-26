@@ -18,6 +18,7 @@ sed -i "s/webServer.user = \"admin\"/webServer.user = \"$(bashio::config 'webSer
 sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::config 'webServerPassword')\"/" $CONFIG_PATH
 sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
 sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
+sed -i "s/name = \"your_proxy_name_tcp_8099\"/name = \"$(bashio::config 'proxyName')-tcp-8099\"/" $CONFIG_PATH
 
 
 bashio::log.info "Starting frp client"
