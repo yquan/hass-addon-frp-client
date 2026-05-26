@@ -25,13 +25,12 @@ sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::co
 sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
 sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
 
-tcp_proxies=$(bashio::config 'tcpProxies' '{"name":"app-8099","protocol":"tcp","localPort":8099,"remotePort":8099}')
-printf "%s\n" "${tcp_proxies}" | while read -r proxy; do
+extra_proxies=$(bashio::config 'extraProxies' '{"name":"app-8099","protocol":"tcp","localPort":8099,"remotePort":8099}')
+printf "%s\n" "${extra_proxies}" | while read -r proxy; do
     proxy_name=$(bashio::jq "${proxy}" '.name // empty')
     protocol=$(bashio::jq "${proxy}" '.protocol // "tcp"')
     local_port=$(bashio::jq "${proxy}" '.localPort // empty')
     remote_port=$(bashio::jq "${proxy}" '.remotePort // empty')
-    custom_domain=$(bashio::jq "${proxy}" '.customDomain // empty')
 
     if [[ -z "${proxy_name}" || -z "${local_port}" ]]; then
         bashio::log.warning "Skipping proxy with missing name or localPort"
@@ -58,17 +57,12 @@ remotePort = ${remote_port}
 EOF
             ;;
         http|https)
-            if [[ -z "${custom_domain}" ]]; then
-                bashio::log.warning "Skipping ${proxy_name}: ${protocol} proxies require customDomain"
-                continue
-            fi
-
             cat >> $CONFIG_PATH <<EOF
 
 [[proxies]]
 name = $(toml_string "$(bashio::config 'proxyName')-${proxy_name}")
 type = "${protocol}"
-customDomains = [$(toml_string "${custom_domain}")]
+customDomains = [$(toml_string "$(bashio::config 'customDomain')")]
 transport.useEncryption = true
 transport.useCompression = true
 localPort = ${local_port}

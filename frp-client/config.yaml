@@ -28,7 +28,7 @@ options:
   webServerPassword: "123456789"
   customDomain: "example.com"
   proxyName: "homeassistant"
-  tcpProxies:
+  extraProxies:
     - name: app-8099
       protocol: tcp
       localPort: 8099
@@ -42,9 +42,8 @@ schema:
   webServerPassword: str
   customDomain: str
   proxyName: str
-  tcpProxies:
+  extraProxies:
     - name: str
       protocol: "list(tcp|udp|http|https)"
       localPort: int
       remotePort: int
-      customDomain: "str?"
