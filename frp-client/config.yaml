@@ -47,3 +47,4 @@ schema:
       protocol: "list(tcp|udp|http|https)"
       localPort: int
       remotePort: int
+      customDomain: "str?"

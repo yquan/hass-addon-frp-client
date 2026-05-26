@@ -31,6 +31,7 @@ printf "%s\n" "${extra_proxies}" | while read -r proxy; do
     protocol=$(bashio::jq "${proxy}" '.protocol // "tcp"')
     local_port=$(bashio::jq "${proxy}" '.localPort // empty')
     remote_port=$(bashio::jq "${proxy}" '.remotePort // empty')
+    custom_domain=$(bashio::jq "${proxy}" '.customDomain // empty')
 
     if [[ -z "${proxy_name}" || -z "${local_port}" ]]; then
         bashio::log.warning "Skipping proxy with missing name or localPort"
@@ -57,12 +58,16 @@ remotePort = ${remote_port}
 EOF
             ;;
         http|https)
+            if [[ -z "${custom_domain}" ]]; then
+                custom_domain=$(bashio::config 'customDomain')
+            fi
+
             cat >> $CONFIG_PATH <<EOF
 
 [[proxies]]
 name = $(toml_string "$(bashio::config 'proxyName')-${proxy_name}")
 type = "${protocol}"
-customDomains = [$(toml_string "$(bashio::config 'customDomain')")]
+customDomains = [$(toml_string "${custom_domain}")]
 transport.useEncryption = true
 transport.useCompression = true
 localPort = ${local_port}
