@@ -9,7 +9,9 @@ function toml_string() {
 
 function stop_frpc() {
     bashio::log.info "Shutdown frpc client"
-    kill -15 "${WAIT_PIDS[@]}"
+    if [[ ${#WAIT_PIDS[@]} -gt 0 ]]; then
+        kill -15 "${WAIT_PIDS[@]}" 2>/dev/null || true
+    fi
 }
 
 bashio::log.info "Copying configuration."
@@ -23,8 +25,8 @@ sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::co
 sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
 sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
 
-addon_config=$(bashio::addon.config)
-bashio::jq "${addon_config}" 'if has("tcpProxies") then .tcpProxies else [{"name":"app-8099","localPort":8099,"remotePort":8099}] end | .[]?' | while read -r proxy; do
+tcp_proxies=$(bashio::config 'tcpProxies' '{"name":"app-8099","localPort":8099,"remotePort":8099}')
+printf "%s\n" "${tcp_proxies}" | while read -r proxy; do
     proxy_name=$(bashio::jq "${proxy}" '.name // empty')
     local_port=$(bashio::jq "${proxy}" '.localPort // empty')
     remote_port=$(bashio::jq "${proxy}" '.remotePort // empty')
