@@ -31,6 +31,7 @@ options:
   extraProxies:
     - name: app-8099
       protocol: tcp
+      localIP: "0.0.0.0"
       localPort: 8099
       remotePort: 8099
 schema:
@@ -45,6 +46,7 @@ schema:
   extraProxies:
     - name: str
       protocol: "list(tcp|udp|http|https)"
+      localIP: str
       localPort: int
       remotePort: int
       customDomain: "str?"

@@ -25,10 +25,11 @@ sed -i "s/webServer.password = \"123456789\"/webServer.password = \"$(bashio::co
 sed -i "s/customDomains = \[\"your_domain\"\]/customDomains = [\"$(bashio::config 'customDomain')\"]/" $CONFIG_PATH
 sed -i "s/name = \"your_proxy_name\"/name = \"$(bashio::config 'proxyName')\"/" $CONFIG_PATH
 
-extra_proxies=$(bashio::config 'extraProxies' '{"name":"app-8099","protocol":"tcp","localPort":8099,"remotePort":8099}')
+extra_proxies=$(bashio::config 'extraProxies' '{"name":"app-8099","protocol":"tcp","localIP":"0.0.0.0","localPort":8099,"remotePort":8099}')
 printf "%s\n" "${extra_proxies}" | while read -r proxy; do
     proxy_name=$(bashio::jq "${proxy}" '.name // empty')
     protocol=$(bashio::jq "${proxy}" '.protocol // "tcp"')
+    local_ip=$(bashio::jq "${proxy}" '.localIP // "0.0.0.0"')
     local_port=$(bashio::jq "${proxy}" '.localPort // empty')
     remote_port=$(bashio::jq "${proxy}" '.remotePort // empty')
     custom_domain=$(bashio::jq "${proxy}" '.customDomain // empty')
@@ -53,7 +54,7 @@ type = "${protocol}"
 transport.useEncryption = true
 transport.useCompression = true
 localPort = ${local_port}
-localIP = "0.0.0.0"
+localIP = $(toml_string "${local_ip}")
 remotePort = ${remote_port}
 EOF
             ;;
@@ -71,7 +72,7 @@ customDomains = [$(toml_string "${custom_domain}")]
 transport.useEncryption = true
 transport.useCompression = true
 localPort = ${local_port}
-localIP = "0.0.0.0"
+localIP = $(toml_string "${local_ip}")
 EOF
             ;;
         *)
