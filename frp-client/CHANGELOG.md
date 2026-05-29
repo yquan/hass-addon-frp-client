@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- keep frpc retrying when the initial server login fails
+
 ## 1.0.5
 
 - add configurable TCP proxy mappings

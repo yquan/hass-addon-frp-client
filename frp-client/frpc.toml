@@ -1,5 +1,6 @@
 serverAddr = "your_server_addr"
 serverPort = 7000
+loginFailExit = false
 auth.method = "token"
 auth.token = "123456789"
 
